@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:conext="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd" >
+
+
+
+
+	<bean id="azureMQConnectionFactory" class="com.fne.kiosk.kiosk.azure.AzureKioskConnectionFactory">
+		<property name="connectionString" value="${spring.jms.servicebus.connection-string}"/>
+		<property name="idleTimeout" value="120000"/>
+	</bean>
+<!-- 	
+	<bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory" init-method="start" destroy-method="stop">
+		<property name="maxConnections" value="10" />
+		<property name="maximumActiveSessionPerConnection" value="20" />
+		<property name="blockIfSessionPoolIsFull" value="true" />
+		<property name="createConnectionOnStartup" value="true" />
+		<property name="idleTimeout" value="50" />
+		
+		<property name="connectionFactory">
+			<ref bean="azureMQConnectionFactory" />
+		</property>
+	</bean>
+-->	 
+	<bean id="jmsConfiguration" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory">
+			<ref bean="azureMQConnectionFactory"/>
+		</property>
+		<property name="concurrentConsumers" value="1"/>
+		<property name="maxConcurrentConsumers" value="1"/>
+	</bean>
+	 
+	 
+	<bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
+		<property name="configuration">
+			<ref bean="jmsConfiguration"/>
+		</property>
+	</bean>	
+
+    <bean id="jpa" class="org.apache.camel.component.jpa.JpaComponent" >
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+    </bean>
+
+    <bean id="KioskRouteBuilder" class="com.fne.kiosk.kiosk.route.RouteLoader">
+        <property name="routeBase" value="/nas/routes"/>
+    </bean>
+
+    <bean id="indepotentRepo" class="com.fne.kiosk.kiosk.route.MemoryIdempotentRepository"/>
+    <bean id="JacksonObjectMapper" class="com.fne.kiosk.kiosk.json.WorkflowObjectMapper"/>
+
+
+	<bean id="cashAcceptorMessage" class="com.fne.camel.CashAcceptorBean" />
+	<bean id="checkReaderMessage" class="com.fne.camel.CheckReaderBean" />
+	<bean id="barcodeReaderMessage" class="com.fne.camel.BarCodeReaderBean" />
+	<bean id="cardMessage" class="com.fne.camel.CardReadBean" />
+
+    <camelContext id="Kiosk-camel" xmlns="http://camel.apache.org/schema/spring" >
+<!--
+        <dataFormats>
+            <json id="BDXAdminActionRequiredResponse" objectMapper="JacksonObjectMapper" library="Jackson"
+                  unmarshalTypeName="com.pnc.bdx."
+        </dataFormats>
+-->
+<!-- 
+		<endpoint id="creditcardqueue" uri="jms:queue:dd3b2de0-d774-42fa-881d-f2e4f1eb9492"/>
+ --> 
+
+        <route id="Persistent Route Loader">
+
+            <from uri="scheduler://persistRouteLoader?delay=30000"/>
+            <to uri="bean:KioskRouteBuilder?method=readAllRoutesFromStore( ${exchange})"/>
+
+            <choice>
+                <when>
+                    <simple>${in.header.BDXStatus} contains 'New Route'</simple>
+                    <to uri="direct:NewRouteToProcess"/>
+                    <to uri="direct:CheckForRouteUpdates"/>
+                    <to uri="direct:CheckForDeletedRoutes"/>
+                </when>
+
+                <when>
+                    <simple>${in.header.BDXStatus} contains 'No New Routes'</simple>
+                    <!-- Do nothing, no new routes to load -->
+                </when>
+
+                <otherwise>
+                    <!-- We should no have this state -->
+                </otherwise>
+            </choice>
+        </route>
+
+        <route id="Process New Route">
+            <from uri="direct:NewRouteToProcess"/>
+            <to uri="bean:KioskRouteBuilder?method=addRoutesFromStore(${exchange})"/>
+        </route>
+
+        <route id="Process on Existing Route Updates">
+            <from uri="direct:CheckForRouteUpdates"/>
+            <to uri="bean:KioskRouteBuilder?method=checkRoutesForStoreUpdate(${exchange})"/>
+        </route>
+
+
+        <route id="Check for routes to delete">
+            <from uri="direct:CheckForDeletedRoutes"/>
+            <to uri="bean:KioskRouteBuilder?method=checkForDeletedEntries(${exchange})"/>
+        </route>
+<!--         
+	    <route id="IDTechCardReader" trace="false">
+			<from uri="jms:queue:dd3b2de0-d774-42fa-881d-f2e4f1eb9492"/>
+			<convertBodyTo type="java.lang.String" charset="utf-8"/>	
+			<to uri="bean:cardMessage"/>			
+	    </route>        
+-->
+        
+    </camelContext>
+</beans>

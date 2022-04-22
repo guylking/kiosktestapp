@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info">
+
+    <Appenders>
+    
+        <Console name="LogToConsole" target="SYSTEM_OUT" follow="true" >
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+<!--         
+        <Console name="LogToConsole" target="SYSTEM_OUT">
+            <JsonLayout complete="false" compact="true" includeStacktrace="true">
+                <KeyValuePair key="customfield" value = "customvalue"/>
+            </JsonLayout>
+        </Console>
+-->
+
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="LogToConsole"/>
+        </Root>
+    </Loggers>
+</Configuration>

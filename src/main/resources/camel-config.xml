@@ -8,8 +8,6 @@
         http://camel.apache.org/schema/spring/camel-spring.xsd" >
 
 
-
-
 	<bean id="azureMQConnectionFactory" class="com.fne.kiosk.kiosk.azure.AzureKioskConnectionFactory">
 		<property name="connectionString" value="${spring.jms.servicebus.connection-string}"/>
 		<property name="idleTimeout" value="120000"/>

@@ -47,10 +47,10 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
 	 * 
 	 */
 	private static final long serialVersionUID = 8665920185276589186L;
-	public static TextArea textArea = null;
-	public static TextArea cashAcceptor = null;
-	public static TextArea barcodeReader = null;
-	public static TextArea checkReader = null;
+	public  TextArea textArea = null;
+	public  TextArea cashAcceptor = null;
+	public  TextArea barcodeReader = null;
+	public  TextArea checkReader = null;
 	
     private FeederThread thread;
 	  
@@ -72,10 +72,10 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
     }
 	
 	public void clearAllViews() {
-		MainView.textArea.clear(); 
-		MainView.cashAcceptor.clear();
-		MainView.barcodeReader.clear();
-		MainView.checkReader.clear();
+		this.textArea.clear(); 
+		this.cashAcceptor.clear();
+		this.barcodeReader.clear();
+		this.checkReader.clear();
 	}
 	
 	public String getZebraPrintMessage( TextField text ) {
@@ -204,6 +204,7 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
                     if(! CardReadBean.cardReaderIntakeStack.isEmpty() ) {
                         String value = CardReadBean.cardReaderIntakeStack.pop();
                        	ui.access(() -> view.textArea.setValue( view.textArea.getValue() + value + "\n" ));
+//                       	ui.access(() -> MainView.textArea.setValue( MainView.textArea.getValue() + value + "\n" ));
                     }
                     
                     if(! CashAcceptorBean.cashReaderIntakeStack.isEmpty() ) {
@@ -218,7 +219,8 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
                     
                     if(! CheckReaderBean.checkReaderIntakeStack.isEmpty() ) {
                         String value = CheckReaderBean.checkReaderIntakeStack.pop();
-                       	ui.access(() -> view.checkReader.setValue( view.checkReader.getValue() + value  + "\n" ));
+                        ui.access(() -> view.checkReader.setValue( view.checkReader.getValue() + value  + "\n" ));
+//                       	ui.access(() -> MainView.checkReader.setValue( MainView.checkReader.getValue() + value  + "\n" ));
                     }
                     
                 }

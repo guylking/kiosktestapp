@@ -64,7 +64,7 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
    @Override
     protected void onDetach(DetachEvent detachEvent) {
         // Cleanup
-	    log.debug( "Detaiching thread!");
+	    log.debug( "Detaching thread!");
         thread.interrupt();
         thread = null;
     }

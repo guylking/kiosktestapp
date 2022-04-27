@@ -3,6 +3,9 @@ package com.fne.kiosk.kiosk;
 
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.fne.camel.BarCodeReaderBean;
 import com.fne.camel.CardReadBean;
 import com.fne.camel.CashAcceptorBean;
@@ -47,17 +50,21 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
 	 * 
 	 */
 	private static final long serialVersionUID = 8665920185276589186L;
-	public  TextArea textArea = null;
-	public  TextArea cashAcceptor = null;
-	public  TextArea barcodeReader = null;
-	public  TextArea checkReader = null;
+	private  TextArea textArea = null;
+	private  TextArea cashAcceptor = null;
+	private  TextArea barcodeReader = null;
+	private  TextArea checkReader = null;
 	
     private FeederThread thread;
 	  
+
+	static Logger log = LogManager.getLogger( MainView.class );
+
 	  
    @Override
     protected void onDetach(DetachEvent detachEvent) {
         // Cleanup
+	    log.debug( "Detaiching thread!");
         thread.interrupt();
         thread = null;
     }
@@ -69,6 +76,7 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
         // Start the data feed thread
         thread = new FeederThread(attachEvent.getUI(), this);
         thread.start();
+        log.debug("Attaching and starting thread");
     }
 	
 	public void clearAllViews() {
@@ -198,6 +206,7 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
         public void run() {
             try {
                 // Update the data for a while
+            	log.debug("Inside run method starting maing loop looking for thread interrupted event!");
             	while(!Thread.interrupted()) {
             		// Sleep to emulate background work
                     Thread.sleep(500);
@@ -225,11 +234,13 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
                     
                 }
 
+            	log.debug("exiting run loop as thread has been interrupted!");
                 // Inform that we are done
 				/*
 				 * ui.access(() -> { view.add(new Span("Done updating")); });
-				 */            } catch (InterruptedException e) {
-                e.printStackTrace();
+				 */            
+            	} catch (InterruptedException e) {
+            		e.printStackTrace();
             }
         }
     }    

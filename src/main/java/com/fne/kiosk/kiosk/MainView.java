@@ -64,7 +64,7 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
    @Override
     protected void onDetach(DetachEvent detachEvent) {
         // Cleanup
-	    log.debug( "Detaching thread!");
+	    log.debug( "****** Detaching thread! ******");
         thread.interrupt();
         thread = null;
     }
@@ -76,7 +76,7 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
         // Start the data feed thread
         thread = new FeederThread(attachEvent.getUI(), this);
         thread.start();
-        log.debug("Attaching and starting thread");
+        log.debug("****** Attaching and starting thread ******");
     }
 	
 	public void clearAllViews() {

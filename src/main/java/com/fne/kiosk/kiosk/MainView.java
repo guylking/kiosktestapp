@@ -198,8 +198,8 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
         public void run() {
             try {
                 // Update the data for a while
-                while ( true ) {
-                    // Sleep to emulate background work
+            	while(!Thread.interrupted()) {
+            		// Sleep to emulate background work
                     Thread.sleep(500);
                     if(! CardReadBean.cardReaderIntakeStack.isEmpty() ) {
                         String value = CardReadBean.cardReaderIntakeStack.pop();

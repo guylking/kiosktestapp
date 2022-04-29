@@ -56,6 +56,9 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
 	private  TextArea checkReader = null;
 	
     private FeederThread thread;
+    
+    private static  boolean shouldThreadBeShutdown = true;
+    
 	  
 
 	static Logger log = LogManager.getLogger( MainView.class );
@@ -107,6 +110,15 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
 	}
 	
     public MainView() {
+    	
+    	try {
+			MainView.shouldThreadBeShutdown = true;
+			Thread.sleep(2000);
+			MainView.shouldThreadBeShutdown = false;
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
     	
     	this.setWidthFull();
         // Use TextField for standard text input
@@ -207,7 +219,7 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
             try {
                 // Update the data for a while
             	log.debug("Inside run method starting maing loop looking for thread interrupted event!");
-            	while(!Thread.interrupted()) {
+            	while( ! MainView.shouldThreadBeShutdown ) {
             		// Sleep to emulate background work
                     Thread.sleep(500);
                     if(! CardReadBean.cardReaderIntakeStack.isEmpty() ) {

@@ -66,9 +66,8 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
 	  
    @Override
     protected void onDetach(DetachEvent detachEvent) {
-        // Cleanup
-	    log.debug( "****** Detaching thread! ******");
-        thread.interrupt();
+		log.info( "******   Resetting main thread to shutdown from onDetach ******");
+		MainView.shouldThreadBeShutdown = true;
         thread = null;
     }
 	   
@@ -76,7 +75,17 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
     protected void onAttach(AttachEvent attachEvent) {
  //       add(new Span("Waiting for updates"));
 
-        // Start the data feed thread
+    	try {
+    		log.info( "******   Resetting main thread to shutdown ******");
+			MainView.shouldThreadBeShutdown = true;
+			Thread.sleep(2000);
+			MainView.shouldThreadBeShutdown = false;
+			log.info( "******  Resetting main thread to a startup state ******" );
+		} catch (InterruptedException e1) {
+			log.error( e1.getLocalizedMessage() );
+		}
+
+    	// Start the data feed thread
         thread = new FeederThread(attachEvent.getUI(), this);
         thread.start();
         log.debug("****** Attaching and starting thread ******");
@@ -110,15 +119,6 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
 	}
 	
     public MainView() {
-    	
-    	try {
-			MainView.shouldThreadBeShutdown = true;
-			Thread.sleep(2000);
-			MainView.shouldThreadBeShutdown = false;
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
     	
     	this.setWidthFull();
         // Use TextField for standard text input
@@ -218,7 +218,7 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
         public void run() {
             try {
                 // Update the data for a while
-            	log.debug("Inside run method starting maing loop looking for thread interrupted event!");
+            	log.debug( "****** Inside run method starting maing loop looking for thread interrupted event! ******");
             	while( ! MainView.shouldThreadBeShutdown ) {
             		// Sleep to emulate background work
                     Thread.sleep(500);
@@ -246,7 +246,7 @@ public class MainView extends VerticalLayout implements AppShellConfigurator  {
                     
                 }
 
-            	log.debug("exiting run loop as thread has been interrupted!");
+            	log.debug("****** Exiting run loop as thread has been interrupted! ******");
                 // Inform that we are done
 				/*
 				 * ui.access(() -> { view.add(new Span("Done updating")); });
